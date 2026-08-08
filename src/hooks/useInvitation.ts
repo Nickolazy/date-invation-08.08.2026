@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import type { InvitationSelections, Step } from "../types/invitation";
+import type { DateSubmission, SubmissionStatus } from "../types/submission";
 import {
   dateOptions,
   dressCodes,
@@ -7,6 +8,7 @@ import {
   foodPlaces,
   meetingPoints,
 } from "../data/invitation";
+import { submitDatePlan } from "../services/submission";
 
 const STEP_ORDER: Step[] = [
   "welcome",
@@ -20,13 +22,6 @@ const STEP_ORDER: Step[] = [
   "confirmation",
 ];
 
-const STORAGE_KEY = "date-invitation:v1";
-
-type PersistedState = {
-  step: Step;
-  selections: InvitationSelections;
-};
-
 const initialSelections: InvitationSelections = {
   dateId: null,
   movieId: null,
@@ -36,35 +31,15 @@ const initialSelections: InvitationSelections = {
   meetingPointId: null,
 };
 
-function loadPersisted(): PersistedState | null {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as PersistedState;
-    if (!STEP_ORDER.includes(parsed.step)) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
 export function useInvitation() {
-  const [step, setStep] = useState<Step>(
-    () => loadPersisted()?.step ?? "welcome",
-  );
-  const [selections, setSelections] = useState<InvitationSelections>(
-    () => loadPersisted()?.selections ?? initialSelections,
-  );
-
-  useEffect(() => {
-    const payload: PersistedState = { step, selections };
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    } catch {
-      // Private mode / full quota — losing persistence is fine, the app
-      // still works for the current session.
-    }
-  }, [step, selections]);
+  const [step, setStep] = useState<Step>("welcome");
+  const [selections, setSelections] =
+    useState<InvitationSelections>(initialSelections);
+  const [noClicks, setNoClicks] = useState(0);
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [submissionSubmitted, setSubmissionSubmitted] = useState(false);
+  const [submissionStatus, setSubmissionStatus] =
+    useState<SubmissionStatus>("idle");
 
   const next = useCallback(() => {
     setStep((current) => {
@@ -103,11 +78,10 @@ export function useInvitation() {
   const reset = useCallback(() => {
     setStep("welcome");
     setSelections(initialSelections);
-    try {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // ignore
-    }
+    setNoClicks(0);
+    setSubmissionId(null);
+    setSubmissionSubmitted(false);
+    setSubmissionStatus("idle");
   }, []);
 
   const selectDate = useCallback(
@@ -139,6 +113,10 @@ export function useInvitation() {
     [],
   );
 
+  const incrementNoClicks = useCallback(() => {
+    setNoClicks((count) => count + 1);
+  }, []);
+
   const selectedDate =
     dateOptions.find((d) => d.id === selections.dateId) ?? null;
   const selectedMovie =
@@ -152,6 +130,91 @@ export function useInvitation() {
   const selectedMeetingPoint =
     meetingPoints.find((m) => m.id === selections.meetingPointId) ?? null;
 
+  /**
+   * Submission is deliberately triggered once, explicitly, from the final
+   * CTA — not after every screen. This builds the minimal DTO from the
+   * already-resolved option objects rather than shipping the whole hook
+   * state to the Worker.
+   */
+  const submit = useCallback(async () => {
+    if (submissionStatus === "submitting") return;
+
+    if (submissionSubmitted) {
+      setSubmissionStatus("success");
+      return;
+    }
+
+    if (
+      !selectedDate ||
+      !selectedMovie ||
+      !selectedFood ||
+      !selectedFoodPlace ||
+      !selectedDressCode ||
+      !selectedMeetingPoint
+    ) {
+      setSubmissionStatus("error");
+      return;
+    }
+
+    const id = submissionId ?? crypto.randomUUID();
+    if (!submissionId) setSubmissionId(id);
+
+    const payload: DateSubmission = {
+      submissionId: id,
+      selectedDate: {
+        id: selectedDate.id,
+        weekday: selectedDate.weekday,
+        day: selectedDate.day,
+        month: selectedDate.month,
+      },
+      selectedMovie: {
+        id: selectedMovie.id,
+        title: selectedMovie.title,
+        time: selectedMovie.time,
+      },
+      selectedFood: {
+        id: selectedFood.id,
+        label: selectedFood.label,
+      },
+      selectedFoodPlace: {
+        id: selectedFoodPlace.id,
+        name: selectedFoodPlace.name,
+      },
+      selectedDressCode: {
+        id: selectedDressCode.id,
+        label: selectedDressCode.label,
+      },
+      selectedMeetingPoint: {
+        id: selectedMeetingPoint.id,
+        label: selectedMeetingPoint.label,
+        time: selectedMeetingPoint.time,
+      },
+      noClicks,
+      completedAt: new Date().toISOString(),
+    };
+
+    setSubmissionStatus("submitting");
+    const result = await submitDatePlan(payload);
+
+    if (result.ok) {
+      setSubmissionSubmitted(true);
+      setSubmissionStatus("success");
+    } else {
+      setSubmissionStatus("error");
+    }
+  }, [
+    submissionStatus,
+    submissionSubmitted,
+    submissionId,
+    selectedDate,
+    selectedMovie,
+    selectedFood,
+    selectedFoodPlace,
+    selectedDressCode,
+    selectedMeetingPoint,
+    noClicks,
+  ]);
+
   return {
     step,
     selections,
@@ -161,6 +224,10 @@ export function useInvitation() {
     selectedFoodPlace,
     selectedDressCode,
     selectedMeetingPoint,
+    noClicks,
+    incrementNoClicks,
+    submissionStatus,
+    submit,
     next,
     advance,
     allSelected,

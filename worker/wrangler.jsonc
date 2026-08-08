@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Worker name shown in the Cloudflare dashboard and in the
+  // `*.workers.dev` subdomain (e.g. date-invitation-worker.<you>.workers.dev).
+  "name": "date-invitation-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-11-06",
+
+  // Stateless on purpose — no KV, R2, D1, or Durable Objects. The Worker
+  // only validates a request and relays it to the Telegram Bot API.
+
+  // Non-secret config. TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must NOT go
+  // here — set them with `wrangler secret put`, see worker/README.md.
+  "vars": {
+    // Origin GitHub Pages serves the frontend from, WITHOUT a path, e.g.
+    // "https://your-username.github.io" (not ".../your-repo/"). Inferred
+    // from the `origin` git remote (github.com/Nickolazy/...) — update
+    // this if Pages actually gets served from a different account/domain.
+    "ALLOWED_ORIGIN": "https://nickolazy.github.io"
+  }
+}

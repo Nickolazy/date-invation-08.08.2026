@@ -9,13 +9,15 @@ type Stage = "question" | "no1" | "no2" | "no3-beats" | "no3-settled";
 
 type InvitationScreenProps = {
   onDone: () => void;
+  onNoClick: () => void;
 };
 
-export function InvitationScreen({ onDone }: InvitationScreenProps) {
+export function InvitationScreen({ onDone, onNoClick }: InvitationScreenProps) {
   const [stage, setStage] = useState<Stage>("question");
   const [leaving, setLeaving] = useState(false);
 
   const handleNo = () => {
+    onNoClick();
     setStage((current) => {
       if (current === "question") return "no1";
       if (current === "no1") return "no2";

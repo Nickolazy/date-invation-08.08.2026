@@ -20,7 +20,12 @@ function App() {
         return <WelcomeScreen onDone={invitation.next} />;
 
       case "invitation":
-        return <InvitationScreen onDone={invitation.next} />;
+        return (
+          <InvitationScreen
+            onDone={invitation.next}
+            onNoClick={invitation.incrementNoClicks}
+          />
+        );
 
       case "date":
         return (
@@ -89,6 +94,8 @@ function App() {
             meetingPoint={invitation.selectedMeetingPoint}
             onEdit={invitation.goTo}
             onReset={invitation.reset}
+            submissionStatus={invitation.submissionStatus}
+            onSubmit={invitation.submit}
           />
         );
 

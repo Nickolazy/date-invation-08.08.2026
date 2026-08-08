@@ -14,13 +14,13 @@ import type {
 export const names = {
   // Shown on the cinematic invitation card. Keep it short — initials,
   // a monogram, whatever feels right. Leave empty to show just the mark.
-  label: "Т + Н",
+  label: "Коля + Маша",
 };
 
 export const copy = {
   welcome: {
-    line1: "для тебя ♡",
-    line2: "у меня кое-что есть...",
+    line1: "для тебя",
+    line2: "у меня кое-что есть",
     cta: "Открыть",
   },
   invitation: {
@@ -89,6 +89,10 @@ export const copy = {
     title: "OUR DATE",
     closing: "Осталось только дождаться этого вечера.",
     cta: "До встречи ❤️",
+    submitting: "Отправляю...",
+    errorTitle: "Кажется, что-то пошло не так.",
+    errorSubtitle: "Попробуем ещё раз?",
+    retryCta: "Попробовать ещё раз",
     editLabels: {
       date: "изменить дату",
       movie: "изменить фильм",

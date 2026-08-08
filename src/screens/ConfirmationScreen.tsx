@@ -14,8 +14,9 @@ import type {
   MovieOption,
   Step,
 } from "../types/invitation";
+import type { SubmissionStatus } from "../types/submission";
 
-type Phase = "ready" | "reveal" | "final";
+type Phase = "ready" | "reveal";
 
 type ConfirmationScreenProps = {
   date: DateOption | null;
@@ -26,6 +27,8 @@ type ConfirmationScreenProps = {
   meetingPoint: MeetingPointOption | null;
   onEdit: (target: Step) => void;
   onReset: () => void;
+  submissionStatus: SubmissionStatus;
+  onSubmit: () => void;
 };
 
 export function ConfirmationScreen({
@@ -37,6 +40,8 @@ export function ConfirmationScreen({
   meetingPoint,
   onEdit,
   onReset,
+  submissionStatus,
+  onSubmit,
 }: ConfirmationScreenProps) {
   const [phase, setPhase] = useState<Phase>("ready");
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -75,13 +80,21 @@ export function ConfirmationScreen({
     return cleanup;
   }, [phase, complete]);
 
+  // A reload after a successful submission has nothing left to confirm —
+  // the CTA/submitting/error states below only ever show up if
+  // `submissionStatus` isn't already "success".
   useEffect(() => {
-    if (phase !== "final") return;
+    if (phase !== "reveal" || submissionStatus !== "success") return;
     const particles = particlesRef.current
       ? Array.from(particlesRef.current.querySelectorAll<HTMLElement>("[data-particle]"))
       : [];
     return playFinalCta({ card: cardRef.current, particles });
-  }, [phase]);
+  }, [phase, submissionStatus]);
+
+  const handleSubmit = useCallback(() => {
+    if (submissionStatus === "submitting") return;
+    onSubmit();
+  }, [submissionStatus, onSubmit]);
 
   if (!complete) {
     return (
@@ -96,7 +109,9 @@ export function ConfirmationScreen({
       ref={scrollerRef}
       className={cn(
         "relative flex h-full flex-col items-center gap-8 overflow-y-auto px-6 py-10 transition-colors duration-700",
-        phase === "final" ? "bg-rose-mist" : "bg-ivory",
+        phase === "reveal" && submissionStatus === "success"
+          ? "bg-rose-mist"
+          : "bg-ivory",
       )}
     >
       <div
@@ -166,19 +181,47 @@ export function ConfirmationScreen({
             {copy.confirmation.closing} ❤️
           </motion.p>
 
-          {phase === "reveal" && (
+          {phase === "reveal" && submissionStatus === "idle" && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <Button onClick={() => setPhase("final")}>
-                {copy.confirmation.cta}
+              <Button onClick={handleSubmit}>{copy.confirmation.cta}</Button>
+            </motion.div>
+          )}
+
+          {phase === "reveal" && submissionStatus === "submitting" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <Button disabled aria-busy="true">
+                {copy.confirmation.submitting}
               </Button>
             </motion.div>
           )}
 
-          {phase === "final" && (
+          {phase === "reveal" && submissionStatus === "error" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex flex-col items-center gap-4"
+            >
+              <p className="text-balance text-center text-[15px] text-stone">
+                {copy.confirmation.errorTitle}
+                <br />
+                {copy.confirmation.errorSubtitle}
+              </p>
+              <Button onClick={handleSubmit}>
+                {copy.confirmation.retryCta}
+              </Button>
+            </motion.div>
+          )}
+
+          {phase === "reveal" && submissionStatus === "success" && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}

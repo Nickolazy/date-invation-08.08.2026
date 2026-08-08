@@ -32,6 +32,9 @@ jobs:
           # Project Pages are served from /<repo>/, not /. This tells
           # Vite to prefix built asset URLs accordingly — see vite.config.ts.
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          # Set under Settings → Secrets and variables → Actions →
+          # Variables once the Worker is deployed — see docs/telegram-setup.md.
+          VITE_SUBMISSION_ENDPOINT: ${{ vars.VITE_SUBMISSION_ENDPOINT }}
         run: npm run build
 
       - uses: actions/upload-pages-artifact@v3
