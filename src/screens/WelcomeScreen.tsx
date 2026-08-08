@@ -46,7 +46,11 @@ export function WelcomeScreen({ onDone }: WelcomeScreenProps) {
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-10 px-6">
-      <AnimatePresence mode="wait">
+      {/* No `mode="wait"` here: the card must mount in the same commit as
+          the phase flip so its refs are attached before the GSAP effect
+          below runs — a "wait" mode would hold it back until the text's
+          exit animation finished, leaving playOpening with null refs. */}
+      <AnimatePresence>
         {phase !== "card" ? (
           <motion.div
             key="text"

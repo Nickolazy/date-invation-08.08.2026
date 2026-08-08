@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { Clapperboard } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { cn, resolveAsset } from "../../lib/utils";
 import { copy } from "../../data/invitation";
 import type { MovieOption } from "../../types/invitation";
 
@@ -24,7 +24,7 @@ export function MovieCard({ movie, selected, onSelect }: MovieCardProps) {
       <div className="relative h-28 w-20 flex-shrink-0 overflow-hidden rounded-2xl bg-rose-mist">
         {!posterFailed ? (
           <img
-            src={movie.poster}
+            src={resolveAsset(movie.poster)}
             alt=""
             onError={() => setPosterFailed(true)}
             className="h-full w-full object-cover"

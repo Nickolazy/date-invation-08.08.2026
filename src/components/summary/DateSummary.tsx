@@ -40,7 +40,7 @@ function SummaryRow({
             key={link.label}
             type="button"
             onClick={link.onClick}
-            className="min-h-8 text-[12px] text-rose underline underline-offset-4 decoration-rose/40"
+            className="min-h-10 inline-flex items-center text-[12px] text-burgundy underline underline-offset-4 decoration-burgundy/40"
           >
             {link.label}
           </button>
@@ -52,8 +52,8 @@ function SummaryRow({
 
 type DateSummaryProps = {
   cardRef: RefObject<HTMLDivElement | null>;
-  headingRef: RefObject<HTMLParagraphElement | null>;
-  rowRefs: RefObject<HTMLDivElement | null>[];
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  getRowRef: (index: number) => (el: HTMLDivElement | null) => void;
   date: DateOption;
   movie: MovieOption;
   food: FoodOption;
@@ -66,7 +66,7 @@ type DateSummaryProps = {
 export function DateSummary({
   cardRef,
   headingRef,
-  rowRefs,
+  getRowRef,
   date,
   movie,
   food,
@@ -82,12 +82,12 @@ export function DateSummary({
       ref={cardRef}
       className="w-full max-w-sm rounded-[28px] border border-line bg-surface p-6 shadow-lift"
     >
-      <p
+      <h1
         ref={headingRef}
         className="text-center text-xs font-medium uppercase tracking-[0.2em] text-stone"
       >
         {copy.confirmation.title}
-      </p>
+      </h1>
       <div className="mt-2 flex items-center justify-center gap-3">
         <p className="font-serif text-xl text-ink">
           {date.day} {date.month}
@@ -95,14 +95,14 @@ export function DateSummary({
         <button
           type="button"
           onClick={() => onEdit("date")}
-          className="min-h-8 text-[12px] text-rose underline underline-offset-4 decoration-rose/40"
+          className="min-h-10 inline-flex items-center text-[12px] text-burgundy underline underline-offset-4 decoration-burgundy/40"
         >
           {labels.date}
         </button>
       </div>
 
       <div className="mt-4">
-        <div ref={rowRefs[0]}>
+        <div ref={getRowRef(0)}>
           <SummaryRow
             icon={UtensilsCrossed}
             label="Ужин"
@@ -114,7 +114,7 @@ export function DateSummary({
             ]}
           />
         </div>
-        <div ref={rowRefs[1]}>
+        <div ref={getRowRef(1)}>
           <SummaryRow
             icon={Clapperboard}
             label="Кино"
@@ -123,7 +123,7 @@ export function DateSummary({
             editLinks={[{ label: labels.movie, onClick: () => onEdit("movie") }]}
           />
         </div>
-        <div ref={rowRefs[2]}>
+        <div ref={getRowRef(2)}>
           <SummaryRow
             icon={MapPin}
             label="Встреча"
@@ -134,7 +134,7 @@ export function DateSummary({
             ]}
           />
         </div>
-        <div ref={rowRefs[3]}>
+        <div ref={getRowRef(3)}>
           <SummaryRow
             icon={Shirt}
             label="Образ"

@@ -89,7 +89,6 @@ export const copy = {
     title: "OUR DATE",
     closing: "Осталось только дождаться этого вечера.",
     cta: "До встречи ❤️",
-    final: "Я уже жду.",
     editLabels: {
       date: "изменить дату",
       movie: "изменить фильм",

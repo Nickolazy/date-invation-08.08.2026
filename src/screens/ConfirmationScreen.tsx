@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "../components/ui/Button";
 import { DateSummary } from "../components/summary/DateSummary";
 import { playFinalCta, playFinalReveal } from "../animations/cinematic";
-import { copy } from "../data/invitation";
+import { copy, finalMessage } from "../data/invitation";
 import { cn } from "../lib/utils";
 import type {
   DateOption,
@@ -41,15 +41,18 @@ export function ConfirmationScreen({
   const [phase, setPhase] = useState<Phase>("ready");
   const scrollerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLParagraphElement>(null);
-  const closingRef = useRef<HTMLParagraphElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const particlesRef = useRef<HTMLDivElement>(null);
-  const rowRef0 = useRef<HTMLDivElement>(null);
-  const rowRef1 = useRef<HTMLDivElement>(null);
-  const rowRef2 = useRef<HTMLDivElement>(null);
-  const rowRef3 = useRef<HTMLDivElement>(null);
   const blobRef0 = useRef<HTMLDivElement>(null);
   const blobRef1 = useRef<HTMLDivElement>(null);
+  const rowEls = useRef<Array<HTMLDivElement | null>>([null, null, null, null]);
+  const rowRefCallbacks = useRef<Array<(el: HTMLDivElement | null) => void>>([]);
+  const getRowRef = useCallback((index: number) => {
+    rowRefCallbacks.current[index] ??= (el: HTMLDivElement | null) => {
+      rowEls.current[index] = el;
+    };
+    return rowRefCallbacks.current[index];
+  }, []);
 
   const complete = date && movie && food && foodPlace && dressCode && meetingPoint;
 
@@ -64,9 +67,7 @@ export function ConfirmationScreen({
     const cleanup = playFinalReveal({
       scroller: scrollerRef.current,
       heading: headingRef.current,
-      rows: [rowRef0.current, rowRef1.current, rowRef2.current, rowRef3.current].filter(
-        (el): el is HTMLDivElement => Boolean(el),
-      ),
+      rows: rowEls.current.filter((el): el is HTMLDivElement => Boolean(el)),
       blobs: [blobRef0.current, blobRef1.current].filter(
         (el): el is HTMLDivElement => Boolean(el),
       ),
@@ -123,17 +124,19 @@ export function ConfirmationScreen({
         </div>
       ) : (
         <div className="relative z-10 flex w-full flex-1 flex-col items-center gap-8">
-          <div ref={particlesRef} className="pointer-events-none absolute inset-x-0 top-16 flex justify-center">
+          <div
+            ref={particlesRef}
+            className="pointer-events-none absolute inset-x-0 top-16 flex justify-center gap-3"
+          >
+            {/* Plain flex children, not individually positioned — GSAP
+                only animates their transform/opacity, so `justify-center`
+                keeps the cluster centered no matter the screen width. */}
             {Array.from({ length: 6 }).map((_, index) => (
               <span
                 key={index}
                 data-particle
                 aria-hidden
-                style={{
-                  position: "absolute",
-                  left: `${(index - 2.5) * 18}px`,
-                  opacity: 0,
-                }}
+                style={{ opacity: 0 }}
                 className="text-lg text-burgundy"
               >
                 ♡
@@ -144,7 +147,7 @@ export function ConfirmationScreen({
           <DateSummary
             cardRef={cardRef}
             headingRef={headingRef}
-            rowRefs={[rowRef0, rowRef1, rowRef2, rowRef3]}
+            getRowRef={getRowRef}
             date={date}
             movie={movie}
             food={food}
@@ -154,12 +157,14 @@ export function ConfirmationScreen({
             onEdit={onEdit}
           />
 
-          <p
-            ref={closingRef}
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
             className="text-balance text-center text-[15px] text-stone"
           >
             {copy.confirmation.closing} ❤️
-          </p>
+          </motion.p>
 
           {phase === "reveal" && (
             <motion.div
@@ -181,12 +186,12 @@ export function ConfirmationScreen({
               className="flex flex-col items-center gap-4"
             >
               <p className="font-serif text-xl text-burgundy">
-                {copy.confirmation.final}
+                {finalMessage}
               </p>
               <button
                 type="button"
                 onClick={onReset}
-                className="min-h-8 text-[12px] text-stone underline underline-offset-4 decoration-stone/40"
+                className="min-h-10 inline-flex items-center text-[12px] text-stone underline underline-offset-4 decoration-stone/40"
               >
                 посмотреть ещё раз
               </button>

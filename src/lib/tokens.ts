@@ -11,6 +11,6 @@ export const colors = {
   burgundy: "#6b2731",
   burgundyDark: "#481b22",
   ink: "#2a2220",
-  stone: "#8c7f76",
+  stone: "#726459",
   line: "#e4dcd3",
 } as const;

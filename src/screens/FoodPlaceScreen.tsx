@@ -1,5 +1,6 @@
 import { ChoiceScreen } from "../components/ui/ChoiceScreen";
 import { SelectionCard } from "../components/ui/SelectionCard";
+import { resolveAsset } from "../lib/utils";
 import { foodPlaces, copy } from "../data/invitation";
 import type { FoodPlaceOption } from "../types/invitation";
 
@@ -35,7 +36,7 @@ export function FoodPlaceScreen({
         >
           {place.image && (
             <img
-              src={place.image}
+              src={resolveAsset(place.image)}
               alt=""
               className="h-32 w-full rounded-2xl object-cover"
               loading="lazy"

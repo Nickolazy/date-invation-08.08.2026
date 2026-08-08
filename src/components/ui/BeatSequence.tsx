@@ -23,7 +23,10 @@ export function BeatSequence({
   const [index, setIndex] = useState(0);
   const textRef = useRef<HTMLParagraphElement>(null);
   const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     const el = textRef.current;
@@ -32,11 +35,11 @@ export function BeatSequence({
     let holdTimer: ReturnType<typeof setTimeout>;
     const cancelTween = revealBeat(el, () => {
       holdTimer = setTimeout(() => {
-        setIndex((current) => {
-          if (current < beats.length - 1) return current + 1;
+        if (index < beats.length - 1) {
+          setIndex((current) => current + 1);
+        } else {
           onCompleteRef.current();
-          return current;
-        });
+        }
       }, holdMs);
     });
 
@@ -47,7 +50,11 @@ export function BeatSequence({
   }, [index, beats.length, holdMs]);
 
   return (
-    <p ref={textRef} className={cn("text-balance", className)}>
+    <p
+      ref={textRef}
+      aria-live="polite"
+      className={cn("text-balance", className)}
+    >
       {beats[index]}
     </p>
   );

@@ -21,8 +21,7 @@ export function SelectionCard({
   return (
     <motion.button
       type="button"
-      role="radio"
-      aria-checked={selected}
+      aria-pressed={selected}
       aria-label={ariaLabel}
       onClick={onSelect}
       whileTap={{ scale: 0.97 }}

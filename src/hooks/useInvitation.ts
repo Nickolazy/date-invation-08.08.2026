@@ -82,6 +82,24 @@ export function useInvitation() {
 
   const goTo = useCallback((target: Step) => setStep(target), []);
 
+  const allSelected = Object.values(selections).every(
+    (value) => value !== null,
+  );
+
+  /**
+   * Sequential "next" is only right the first time through. Once every
+   * choice has already been made once, editing one field from the
+   * confirmation screen should return straight there — not march back
+   * through every screen after it, re-confirming things nothing changed.
+   */
+  const advance = useCallback(() => {
+    setStep((current) => {
+      if (allSelected) return "confirmation";
+      const index = STEP_ORDER.indexOf(current);
+      return STEP_ORDER[Math.min(index + 1, STEP_ORDER.length - 1)];
+    });
+  }, [allSelected]);
+
   const reset = useCallback(() => {
     setStep("welcome");
     setSelections(initialSelections);
@@ -144,6 +162,8 @@ export function useInvitation() {
     selectedDressCode,
     selectedMeetingPoint,
     next,
+    advance,
+    allSelected,
     back,
     goTo,
     reset,

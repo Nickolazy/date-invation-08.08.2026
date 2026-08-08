@@ -27,7 +27,7 @@ function App() {
           <DateScreen
             selectedId={invitation.selections.dateId}
             onSelect={invitation.selectDate}
-            onNext={invitation.next}
+            onNext={invitation.advance}
           />
         );
 
@@ -37,7 +37,8 @@ function App() {
             date={invitation.selectedDate}
             selectedId={invitation.selections.movieId}
             onSelect={invitation.selectMovie}
-            onDone={invitation.next}
+            allSelected={invitation.allSelected}
+            onDone={invitation.advance}
           />
         );
 
@@ -46,7 +47,7 @@ function App() {
           <FoodScreen
             selectedId={invitation.selections.foodId}
             onSelect={invitation.selectFood}
-            onNext={invitation.next}
+            onNext={invitation.advance}
           />
         );
 
@@ -55,7 +56,7 @@ function App() {
           <FoodPlaceScreen
             selectedId={invitation.selections.foodPlaceId}
             onSelect={invitation.selectFoodPlace}
-            onNext={invitation.next}
+            onNext={invitation.advance}
           />
         );
 
@@ -64,7 +65,7 @@ function App() {
           <DressCodeScreen
             selectedId={invitation.selections.dressCodeId}
             onSelect={invitation.selectDressCode}
-            onNext={invitation.next}
+            onNext={invitation.advance}
           />
         );
 
@@ -73,7 +74,7 @@ function App() {
           <MeetingPointScreen
             selectedId={invitation.selections.meetingPointId}
             onSelect={invitation.selectMeetingPoint}
-            onNext={invitation.next}
+            onNext={invitation.advance}
           />
         );
 
