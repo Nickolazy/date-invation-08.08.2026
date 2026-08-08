@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Fraunces", "Iowan Old Style", serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  --color-ivory: #f7f0e8;
+  --color-surface: #fffcf8;
+  --color-rose: #c68e93;
+  --color-rose-mist: #efdcd8;
+  --color-burgundy: #6b2731;
+  --color-burgundy-dark: #481b22;
+  --color-ink: #2a2220;
+  --color-stone: #8c7f76;
+  --color-line: #2a222014;
+
+  --shadow-soft: 0 1px 2px #2a22201a, 0 12px 32px -16px #2a22202e;
+  --shadow-lift: 0 2px 4px #2a22201f, 0 24px 48px -20px #2a22203d;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--color-ivory);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100dvh;
+  isolation: isolate;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  touch-action: manipulation;
+}
+
+/* Subtle paper grain — a single tiled SVG, no runtime cost, no blur/filter. */
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
