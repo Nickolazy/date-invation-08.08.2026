@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "../components/ui/Button";
-import { InvitationCard } from "../components/invitation/InvitationCard";
-import { playOpening } from "../animations/cinematic";
+import { EnvelopeReveal } from "../components/invitation/EnvelopeReveal";
 import { copy } from "../data/invitation";
 
-type Phase = "line1" | "line2" | "card";
+type Phase = "line1" | "line2" | "envelope";
 
 type WelcomeScreenProps = {
   onDone: () => void;
@@ -13,10 +12,6 @@ type WelcomeScreenProps = {
 
 export function WelcomeScreen({ onDone }: WelcomeScreenProps) {
   const [phase, setPhase] = useState<Phase>("line1");
-  const cardRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
-  const markRef = useRef<HTMLDivElement>(null);
-  const labelRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     if (phase !== "line1") return;
@@ -24,43 +19,58 @@ export function WelcomeScreen({ onDone }: WelcomeScreenProps) {
     return () => clearTimeout(timer);
   }, [phase]);
 
-  useEffect(() => {
-    if (phase !== "card") return;
-    let doneTimer: ReturnType<typeof setTimeout> | undefined;
-    const cancelTimeline = playOpening(
-      {
-        card: cardRef.current,
-        glow: glowRef.current,
-        mark: markRef.current,
-        label: labelRef.current,
-      },
-      () => {
-        doneTimer = setTimeout(onDone, 900);
-      },
-    );
-    return () => {
-      cancelTimeline();
-      if (doneTimer) clearTimeout(doneTimer);
-    };
-  }, [phase, onDone]);
-
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-10 px-6">
-      {/* No `mode="wait"` here: the card must mount in the same commit as
-          the phase flip so its refs are attached before the GSAP effect
-          below runs — a "wait" mode would hold it back until the text's
-          exit animation finished, leaving playOpening with null refs. */}
-      <AnimatePresence>
-        {phase !== "card" ? (
+    <div className="flex h-full flex-col items-center justify-center px-6">
+      {/* mode="wait" so the text fully clears before the envelope enters —
+          no moment where both occupy the flex column at once and shove
+          the text out of place. */}
+      <AnimatePresence mode="wait">
+        {phase !== "envelope" ? (
           <motion.div
             key="text"
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col items-center gap-7 text-center"
+            layout="position"
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="flex w-full flex-col items-center gap-7 text-center"
           >
-            <p className="font-serif text-3xl text-ink">
+            <motion.div
+              layout="position"
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="relative flex items-center justify-center"
+            >
+              <div
+                aria-hidden
+                className="absolute h-16 w-16 rounded-full opacity-40 blur-xl"
+                style={{
+                  background:
+                    "radial-gradient(circle, var(--color-rose) 0%, transparent 70%)",
+                }}
+              />
+              <motion.span
+                aria-hidden
+                animate={{ scale: [1, 1.12, 1] }}
+                transition={{
+                  duration: 1.8,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.6,
+                }}
+                className="relative font-serif text-4xl leading-none text-burgundy"
+              >
+                ❤
+              </motion.span>
+            </motion.div>
+            <motion.p
+              layout="position"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.35 }}
+              className="font-serif text-3xl text-ink"
+            >
               {copy.welcome.line1}
-            </p>
+            </motion.p>
             <AnimatePresence>
               {phase === "line2" && (
                 <motion.div
@@ -72,7 +82,7 @@ export function WelcomeScreen({ onDone }: WelcomeScreenProps) {
                   <p className="text-[15px] text-stone">
                     {copy.welcome.line2}
                   </p>
-                  <Button onClick={() => setPhase("card")}>
+                  <Button onClick={() => setPhase("envelope")}>
                     {copy.welcome.cta}
                   </Button>
                 </motion.div>
@@ -80,14 +90,9 @@ export function WelcomeScreen({ onDone }: WelcomeScreenProps) {
             </AnimatePresence>
           </motion.div>
         ) : (
-          <motion.div key="card">
-            <InvitationCard
-              cardRef={cardRef}
-              glowRef={glowRef}
-              markRef={markRef}
-              labelRef={labelRef}
-            />
-          </motion.div>
+          <div key="envelope">
+            <EnvelopeReveal onComplete={onDone} />
+          </div>
         )}
       </AnimatePresence>
     </div>

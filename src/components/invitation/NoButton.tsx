@@ -1,10 +1,10 @@
-import { motion, useAnimate } from "motion/react";
+import { motion, type HTMLMotionProps } from "motion/react";
+import { useAnimate } from "motion/react";
 import { cn } from "../../lib/utils";
 
-type NoButtonProps = {
+type NoButtonProps = Omit<HTMLMotionProps<"button">, "onClick"> & {
   label: string;
   onClick: () => void;
-  className?: string;
 };
 
 /**
@@ -12,7 +12,7 @@ type NoButtonProps = {
  * tiny imperative shake via Motion's useAnimate — reliable even when the
  * target rotation settles back to the same resting value every time.
  */
-export function NoButton({ label, onClick, className }: NoButtonProps) {
+export function NoButton({ label, onClick, className, ...props }: NoButtonProps) {
   const [scope, animate] = useAnimate();
 
   const handleClick = () => {
@@ -31,9 +31,10 @@ export function NoButton({ label, onClick, className }: NoButtonProps) {
       onClick={handleClick}
       whileTap={{ scale: 0.94 }}
       className={cn(
-        "min-h-11 px-4 text-[13px] text-stone underline underline-offset-4 decoration-stone/40",
+        "min-h-11 cursor-pointer px-4 text-[13px] text-stone underline underline-offset-4 decoration-stone/40",
         className,
       )}
+      {...props}
     >
       {label}
     </motion.button>

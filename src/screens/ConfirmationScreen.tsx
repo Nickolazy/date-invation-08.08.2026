@@ -234,7 +234,7 @@ export function ConfirmationScreen({
               <button
                 type="button"
                 onClick={onReset}
-                className="min-h-10 inline-flex items-center text-[12px] text-stone underline underline-offset-4 decoration-stone/40"
+                className="min-h-10 inline-flex cursor-pointer items-center text-[12px] text-stone underline underline-offset-4 decoration-stone/40"
               >
                 посмотреть ещё раз
               </button>

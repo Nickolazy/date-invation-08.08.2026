@@ -35,8 +35,6 @@ export function InvitationScreen({ onDone, onNoClick }: InvitationScreenProps) {
         ? copy.invitation.no1.secondary
         : copy.invitation.no2.secondary;
   const emphasized = stage === "no2";
-  const lastBeat =
-    copy.invitation.no3.beats[copy.invitation.no3.beats.length - 1];
 
   return (
     <AnimatePresence mode="wait">
@@ -107,30 +105,46 @@ export function InvitationScreen({ onDone, onNoClick }: InvitationScreenProps) {
                 />
               )}
               {stage === "no3-settled" && (
-                <p className="text-balance font-serif text-2xl text-ink">
-                  {lastBeat}
-                </p>
+                <>
+                  <p className="text-balance font-serif text-2xl text-ink">
+                    {copy.invitation.lead}
+                  </p>
+                  <h1 className="text-balance font-serif text-2xl text-ink">
+                    {copy.invitation.question}
+                  </h1>
+                </>
               )}
             </motion.div>
           </AnimatePresence>
 
-          {stage !== "no3-beats" && (
-            <div className="flex flex-col items-center gap-3">
-              <motion.div
-                animate={emphasized ? { scale: [1, 1.03, 1] } : { scale: 1 }}
-                transition={
-                  emphasized
-                    ? { duration: 1.8, repeat: Infinity, ease: "easeInOut" }
-                    : { duration: 0.3 }
-                }
-              >
-                <Button onClick={() => setLeaving(true)}>
-                  {copy.invitation.yes}
-                </Button>
-              </motion.div>
-              {showNoButton && <NoButton label={noLabel} onClick={handleNo} />}
-            </div>
-          )}
+          <div
+            className="flex flex-col items-center gap-3"
+            style={{
+              visibility: stage === "no3-beats" ? "hidden" : "visible",
+            }}
+            aria-hidden={stage === "no3-beats"}
+            inert={stage === "no3-beats" ? true : undefined}
+          >
+            <motion.div
+              animate={emphasized ? { scale: [1, 1.03, 1] } : { scale: 1 }}
+              transition={
+                emphasized
+                  ? { duration: 1.8, repeat: Infinity, ease: "easeInOut" }
+                  : { duration: 0.3 }
+              }
+            >
+              <Button onClick={() => setLeaving(true)}>
+                {copy.invitation.yes}
+              </Button>
+            </motion.div>
+            <NoButton
+              label={noLabel}
+              onClick={handleNo}
+              style={{ visibility: showNoButton ? "visible" : "hidden" }}
+              aria-hidden={!showNoButton}
+              inert={!showNoButton ? true : undefined}
+            />
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

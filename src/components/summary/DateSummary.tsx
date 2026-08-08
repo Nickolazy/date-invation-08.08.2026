@@ -40,7 +40,7 @@ function SummaryRow({
             key={link.label}
             type="button"
             onClick={link.onClick}
-            className="min-h-10 inline-flex items-center text-[12px] text-burgundy underline underline-offset-4 decoration-burgundy/40"
+            className="min-h-10 inline-flex cursor-pointer items-center text-[12px] text-burgundy underline underline-offset-4 decoration-burgundy/40"
           >
             {link.label}
           </button>
@@ -95,7 +95,7 @@ export function DateSummary({
         <button
           type="button"
           onClick={() => onEdit("date")}
-          className="min-h-10 inline-flex items-center text-[12px] text-burgundy underline underline-offset-4 decoration-burgundy/40"
+          className="min-h-10 inline-flex cursor-pointer items-center text-[12px] text-burgundy underline underline-offset-4 decoration-burgundy/40"
         >
           {labels.date}
         </button>

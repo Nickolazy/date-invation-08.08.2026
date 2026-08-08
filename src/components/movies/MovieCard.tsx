@@ -15,9 +15,13 @@ export function MovieCard({ movie, selected, onSelect }: MovieCardProps) {
   const [posterFailed, setPosterFailed] = useState(false);
 
   return (
-    <div
+    <motion.button
+      type="button"
+      onClick={onSelect}
+      whileTap={{ scale: 0.98 }}
+      aria-pressed={selected}
       className={cn(
-        "flex gap-4 rounded-3xl border p-4 shadow-soft transition-colors duration-300",
+        "flex w-full cursor-pointer gap-4 rounded-3xl border p-4 text-left shadow-soft transition-colors duration-300",
         selected ? "border-burgundy bg-rose-mist" : "border-line bg-surface",
       )}
     >
@@ -37,7 +41,7 @@ export function MovieCard({ movie, selected, onSelect }: MovieCardProps) {
           </div>
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-1.5 text-left">
+      <div className="flex flex-1 flex-col gap-1.5">
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-serif text-lg leading-tight text-ink">
             {movie.title}
@@ -54,11 +58,7 @@ export function MovieCard({ movie, selected, onSelect }: MovieCardProps) {
         <p className="text-[13px] leading-snug text-stone">
           {movie.description}
         </p>
-        <motion.button
-          type="button"
-          onClick={onSelect}
-          whileTap={{ scale: 0.95 }}
-          aria-pressed={selected}
+        <span
           className={cn(
             "mt-1 inline-flex min-h-11 w-fit items-center justify-center rounded-full px-4 text-[13px] font-medium",
             selected
@@ -67,8 +67,8 @@ export function MovieCard({ movie, selected, onSelect }: MovieCardProps) {
           )}
         >
           {selected ? "Выбран ❤️" : copy.movie.selectCta}
-        </motion.button>
+        </span>
       </div>
-    </div>
+    </motion.button>
   );
 }

@@ -1,0 +1,265 @@
+/*
+ * Faithful port of the classic border-triangle envelope technique
+ * (flap + pocket built from 0×0 boxes with CSS borders), driven by a
+ * single .env-open / .env-close class exactly like the reference —
+ * transition-delay alone sequences flap → letter → hearts, no JS
+ * timeline needed for the envelope mechanics themselves.
+ */
+
+.env-envelope {
+  position: relative;
+  width: 260px;
+  height: 168px;
+  border-radius: 16px;
+  background-color: var(--color-burgundy);
+  box-shadow: var(--shadow-lift);
+  /* Without this, rotateX has no vanishing point to fold toward — the
+     flap just flattens to a horizontal sliver and blinks out instead
+     of visibly tipping back and away. */
+  perspective: 900px;
+}
+
+.env-front {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* A shallower flap angle than the textbook version — the original
+   ratio (border-top ~= half-width * 0.7) reads as a sharp, aggressive
+   point; this one is closer to 0.45 for a gentler, rounder silhouette. */
+.env-flap {
+  border-left: 130px solid transparent;
+  border-right: 130px solid transparent;
+  border-bottom: 106px solid transparent;
+  border-top: 62px solid var(--color-burgundy);
+  transform-origin: top;
+  backface-visibility: hidden;
+}
+
+.env-pocket {
+  border-left: 130px solid var(--color-surface);
+  border-right: 130px solid var(--color-surface);
+  border-bottom: 114px solid var(--color-rose-mist);
+  border-top: 54px solid transparent;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.env-letter {
+  position: absolute;
+  left: 50%;
+  top: 5%;
+  width: 90%;
+  height: 90%;
+  border-radius: 14px;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  /* stretch (not center) so the text column is bound to the letter's
+     width and actually wraps — align-items: center lets flex items
+     size to their content's max-content width, so a long sentence
+     just overflows past the letter's edges instead of wrapping. */
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.env-letter-content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Kept hidden until the letter has fully risen — the flap/pocket
+   border-triangles only tile the envelope face seamlessly while the
+   letter sits in its closed position; the moment the flap swings away
+   there's a brief window before the letter itself has moved, and real
+   (multi-line) content can peek through that gap if it's already
+   visible. */
+.env-open .env-letter-content {
+  opacity: 1;
+  transition: opacity 0.4s;
+  transition-delay: 0.95s;
+}
+
+.env-letter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* Kept faint on purpose — this used to ramp to near-opaque at the
+     bottom, which was fine while that area sat hidden low in the
+     envelope, but now the letter rises high enough that its full text
+     (including the second line) is plainly visible, and a strong wash
+     there just fights the text's contrast. */
+  background-image: linear-gradient(
+    180deg,
+    rgba(239, 220, 216, 0) 55%,
+    rgba(239, 220, 216, 0.25) 100%
+  );
+  pointer-events: none;
+}
+
+.env-hearts {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.env-heart {
+  position: absolute;
+  bottom: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.env-heart::before,
+.env-heart::after {
+  position: absolute;
+  content: "";
+  top: 0;
+  width: 12px;
+  height: 19px;
+  background: var(--color-burgundy);
+  border-radius: 12px 12px 0 0;
+  transform: rotate(-45deg);
+  transform-origin: 0 100%;
+}
+
+.env-heart::before {
+  left: 12px;
+}
+
+.env-heart::after {
+  left: 0;
+  transform: rotate(45deg);
+  transform-origin: 100% 100%;
+}
+
+.env-a1 {
+  left: 22%;
+  transform: scale(0.6);
+}
+
+.env-a2 {
+  left: 55%;
+  transform: scale(0.95);
+}
+
+.env-a3 {
+  left: 12%;
+  transform: scale(0.5);
+}
+
+/* --- open / close state --- */
+
+.env-open .env-flap {
+  transform: rotateX(170deg);
+  transition:
+    transform 0.4s ease,
+    z-index 0.6s;
+  z-index: 1;
+}
+
+.env-close .env-flap {
+  transform: rotateX(0deg);
+  transition:
+    transform 0.4s 0.5s ease,
+    z-index 1s;
+  z-index: 5;
+}
+
+.env-close .env-letter {
+  transform: translate(-50%, 0);
+  transition:
+    transform 0.4s ease,
+    z-index 1s;
+  z-index: 1;
+}
+
+.env-open .env-letter {
+  /* Pulled up well clear of the pocket's reach — the pocket's white
+     side-wedges still cover a good chunk of the envelope's upper half
+     even past their narrowest point, so the old -56px rise (a third of
+     the envelope height) wasn't enough to clear the text sitting near
+     the top of the letter. */
+  transform: translate(-50%, -75px);
+  transition:
+    transform 0.4s 0.5s ease,
+    z-index 0.6s;
+  z-index: 2;
+}
+
+.env-close .env-heart {
+  opacity: 0;
+  animation: none;
+}
+
+.env-open .env-a1 {
+  animation:
+    env-slide-up 1.6s linear 1,
+    env-sway 0.8s ease-in-out 2 alternate;
+  animation-fill-mode: forwards;
+  animation-delay: 0.9s;
+}
+
+.env-open .env-a2 {
+  animation:
+    env-slide-up 1.9s linear 1,
+    env-sway 1s ease-in-out 2 alternate;
+  animation-fill-mode: forwards;
+  animation-delay: 0.95s;
+}
+
+.env-open .env-a3 {
+  animation:
+    env-slide-up 2.2s linear 1,
+    env-sway 0.8s ease-in-out 3 alternate;
+  animation-fill-mode: forwards;
+  animation-delay: 1.05s;
+}
+
+@keyframes env-slide-up {
+  0% {
+    bottom: 0;
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    bottom: 130px;
+    opacity: 0;
+  }
+}
+
+@keyframes env-sway {
+  0% {
+    margin-left: 0;
+  }
+  100% {
+    margin-left: 14px;
+  }
+}
+
+.env-reduced .env-flap,
+.env-reduced .env-letter,
+.env-reduced .env-letter-content,
+.env-reduced .env-heart {
+  transition: none !important;
+  animation: none !important;
+}

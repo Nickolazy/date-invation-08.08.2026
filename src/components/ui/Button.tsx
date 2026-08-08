@@ -17,7 +17,7 @@ export function Button({ className, children, ...props }: ButtonProps) {
         "inline-flex min-h-12 items-center justify-center gap-2 rounded-full",
         "bg-burgundy px-8 py-4 text-[15px] font-medium text-surface shadow-lift",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-burgundy",
-        "disabled:opacity-40",
+        "cursor-pointer disabled:cursor-not-allowed disabled:opacity-40",
         className,
       )}
       {...props}

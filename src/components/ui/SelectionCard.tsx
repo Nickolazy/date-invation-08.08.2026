@@ -32,7 +32,7 @@ export function SelectionCard({
       }}
       transition={{ type: "spring", stiffness: 420, damping: 34 }}
       className={cn(
-        "relative w-full rounded-3xl border text-left shadow-soft",
+        "relative w-full cursor-pointer rounded-3xl border text-left shadow-soft",
         className,
       )}
     >
