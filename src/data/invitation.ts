@@ -1,9 +1,8 @@
 import type {
   DateOption,
-  DressCodeOption,
   FoodOption,
-  FoodPlaceOption,
   MeetingPointOption,
+  MovieOption,
 } from "../types/invitation";
 
 /**
@@ -18,6 +17,12 @@ export const names = {
 };
 
 export const copy = {
+  music: {
+    hint: "включи звук — тут кое-что для тебя 🎵",
+    playLabel: "Включить музыку",
+    pauseLabel: "Выключить музыку",
+  },
+
   welcome: {
     line1: "для тебя",
     line2: "у меня есть кое-что особенное",
@@ -50,8 +55,8 @@ export const copy = {
     },
 
     transitionBeats: [
-      "Тогда решено!",
-      "Осталось выбрать дату.",
+      "Я счастлив!",
+      "Давай выберем дату.",
     ],
   },
 
@@ -63,34 +68,22 @@ export const copy = {
   },
 
   movie: {
-    question: "А что будем смотреть? 🎬",
+    question: "На что сходим в кино? 🎬",
     hint: "Я кое-что присмотрел для нас.",
     selectCta: "Выбираю этот ❤️",
-    confirmed: "Отличный выбор. Кажется, будет красиво.",
+    confirmed: "Отличный выбор. Думаю, будет романтично.",
     next: "Дальше →",
 
     transitionBeats: [
       "С фильмом определились.",
       "Но ведь самое интересное — не только кино.",
-      "Давай продумаем весь наш вечер.",
+      "Расскажи мне еще кое-что.",
     ],
   },
 
   food: {
-    question: "Чем будем баловать себя перед кино?",
+    question: "Чем вкусненьким порадовать тебя?",
     confirmed: "Очень вкусный выбор ❤️",
-    next: "Дальше →",
-  },
-
-  foodPlace: {
-    question: "Где проведём немного времени вдвоём?",
-    confirmed: "Мне уже нравится этот план ❤️",
-    next: "Дальше →",
-  },
-
-  dressCode: {
-    question: "Что наденем для нашего вечера? ✨",
-    confirmed: "Ты в любом случае будешь прекрасна.",
     next: "Дальше →",
   },
 
@@ -98,30 +91,170 @@ export const copy = {
     question: "Где начнётся наш вечер?",
     confirmed: "Договорились. Буду ждать тебя ❤️",
     next: "Дальше →",
+
+    transitionBeats: ["Остальное оставь мне ❤️"],
   },
 
   confirmation: {
-    ready: "Кажется, наш вечер уже почти случился.",
+    ready: "Кажется, у нас получится чудесный вечер ❤️",
     title: "OUR DATE",
     closing: "Осталось только дождаться этого вечера.",
-    cta: "До встречи ❤️",
+    cta: "Отправить ❤️",
+    ctaHint: "Нажми — и я сразу получу все твои ответы!",
     submitting: "Сохраняю наш план...",
     errorTitle: "Кажется, что-то пошло не так.",
     errorSubtitle: "Но наш вечер от этого не отменяется ❤️",
     retryCta: "Попробовать ещё раз",
 
+    saveCta: "Сохранить на память",
+    savingImage: "Сохраняю...",
+
     editLabels: {
       date: "изменить дату",
       movie: "изменить фильм",
       food: "изменить еду",
-      foodPlace: "изменить место",
-      dressCode: "изменить образ",
       meetingPoint: "изменить встречу",
     },
   },
 };
 
+const chooseTogether = (id: string): MovieOption => ({
+  id: `${id}-choice`,
+  title: "Что подскажет сердце",
+  description:
+    "Решим вместе на месте — мне понравится любой фильм, если рядом будешь ты.",
+  poster: "/movies/movie-choice.webp",
+  time: "Решим вместе",
+});
+
+/**
+ * The actual lineup currently showing — same six films every day this
+ * week, just at different showtimes. Keeps `dateOptions` below from
+ * repeating title/description/poster per date.
+ */
+const filmCatalog: Array<Omit<MovieOption, "id" | "time">> = [
+  {
+    title: "Миньоны и монстры",
+    description:
+      "Голливуд 1920-х, книга заклинаний, которую лучше было не трогать, и монстры, которые оказались совсем не бутафорскими. Идеально, если хочется просто похохотать вдвоём.",
+    poster: "/movies/minions-and-monsters.jpg",
+    genre: "Анимация, комедия",
+  },
+  {
+    title: "Холоп 3",
+    description:
+      "Мажоров отправляют перевоспитываться в эпоху Петра I — с морскими приключениями и шансом понять, что важнее семьи ничего нет. Смешно и немного трогательно.",
+    poster: "/movies/holop-3.webp",
+    genre: "Комедия",
+  },
+  {
+    title: "За любовь",
+    description:
+      "Пара на грани развода, незнакомец с волшебной бутылкой и тосты, которые исполняются буквально. Рискну загадать что-то на нас двоих.",
+    poster: "/movies/za-lyubov.webp",
+    genre: "Комедия, мелодрама, фэнтези",
+  },
+  {
+    title: "Одиссея",
+    description:
+      "Нолановская версия странствий Одиссея домой — циклопы, ведьмы, шторма и три часа настоящего эпоса. С тобой рядом они пролетят незаметно.",
+    poster: "/movies/odyssey.webp",
+    genre: "Приключения",
+  },
+  {
+    title: "Смешарики сквозь вселенные",
+    description:
+      "Крош и Ёжик находят таинственное устройство и попадают на космический корабль, летящий к Марсу. Немного ностальгии, немного космоса — отличный повод обняться в темноте зала.",
+    poster: "/movies/smeshariki-multiverse.webp",
+    genre: "Анимация, приключения",
+  },
+  {
+    title: "Последний богатырь. Колобок",
+    description:
+      "Колобок вселяется в скромного пекаря — и выясняется, что испекла его вовсе не бабушка. Фэнтези-комедия для вечера с чем-то неожиданным.",
+    poster: "/movies/posledniy-bogatyr-kolobok.webp",
+    genre: "Фэнтези, комедия",
+  },
+];
+
+const makeMovies = (dateId: string, times: string[]): MovieOption[] => [
+  ...filmCatalog.map((film, index) => ({
+    ...film,
+    id: `${dateId}-movie-${index + 1}`,
+    time: times[index],
+  })),
+  chooseTogether(dateId),
+];
+
 export const dateOptions: DateOption[] = [
+  {
+    id: "mon-10",
+    isoDate: "2026-08-10",
+    weekday: "ПН",
+    day: "10",
+    month: "августа",
+
+    movies: makeMovies("mon10", [
+      "18:30",
+      "19:00",
+      "19:15",
+      "19:45",
+      "20:15",
+      "20:45",
+    ]),
+  },
+
+  {
+    id: "tue-11",
+    isoDate: "2026-08-11",
+    weekday: "ВТ",
+    day: "11",
+    month: "августа",
+
+    movies: makeMovies("tue11", [
+      "18:15",
+      "18:45",
+      "19:10",
+      "19:40",
+      "20:05",
+      "20:35",
+    ]),
+  },
+
+  {
+    id: "wed-12",
+    isoDate: "2026-08-12",
+    weekday: "СР",
+    day: "12",
+    month: "августа",
+
+    movies: makeMovies("wed12", [
+      "19:50",
+      "20:20",
+      "18:10",
+      "20:40",
+      "18:50",
+      "18:00",
+    ]),
+  },
+
+  {
+    id: "thu-13",
+    isoDate: "2026-08-13",
+    weekday: "ЧТ",
+    day: "13",
+    month: "августа",
+
+    movies: makeMovies("thu13", [
+      "18:20",
+      "18:50",
+      "19:15",
+      "19:45",
+      "20:10",
+      "20:40",
+    ]),
+  },
+
   {
     id: "fri-14",
     isoDate: "2026-08-14",
@@ -129,26 +262,14 @@ export const dateOptions: DateOption[] = [
     day: "14",
     month: "августа",
 
-    movies: [
-      {
-        id: "fri-interstellar",
-        title: "Интерстеллар",
-        description:
-          "Немного космоса, немного времени и почти три часа рядом друг с другом. Кажется, неплохой план.",
-        poster: "/movies/movie-1.webp",
-        time: "19:30",
-        genre: "Фантастика",
-      },
-      {
-        id: "fri-lalaland",
-        title: "Ла-Ла Ленд",
-        description:
-          "Музыка, огни и история о любви. Кажется, для нашего вечера подходит слишком хорошо.",
-        poster: "/movies/movie-2.webp",
-        time: "20:15",
-        genre: "Мюзикл",
-      },
-    ],
+    movies: makeMovies("fri14", [
+      "18:35",
+      "19:00",
+      "19:25",
+      "19:50",
+      "20:15",
+      "20:45",
+    ]),
   },
 
   {
@@ -158,64 +279,14 @@ export const dateOptions: DateOption[] = [
     day: "15",
     month: "августа",
 
-    movies: [
-      {
-        id: "sat-interstellar",
-        title: "Интерстеллар",
-        description:
-          "Немного космоса, немного времени и почти три часа рядом друг с другом. Кажется, неплохой план.",
-        poster: "/movies/movie-1.webp",
-        time: "19:00",
-        genre: "Фантастика",
-      },
-      {
-        id: "sat-amelie",
-        title: "Амели",
-        description:
-          "Немного французской романтики, немного волшебства и хороший повод провести вечер вместе.",
-        poster: "/movies/movie-3.webp",
-        time: "19:30",
-        genre: "Комедия",
-      },
-      {
-        id: "sat-inception",
-        title: "Начало",
-        description:
-          "Сон внутри сна внутри нашего свидания. Если станет непонятно — просто держи меня за руку.",
-        poster: "/movies/movie-4.webp",
-        time: "21:00",
-        genre: "Триллер",
-      },
-    ],
-  },
-
-  {
-    id: "sun-16",
-    isoDate: "2026-08-16",
-    weekday: "ВС",
-    day: "16",
-    month: "августа",
-
-    movies: [
-      {
-        id: "sun-lalaland",
-        title: "Ла-Ла Ленд",
-        description:
-          "Музыка, огни и история о любви. Кажется, для нашего вечера подходит слишком хорошо.",
-        poster: "/movies/movie-2.webp",
-        time: "18:45",
-        genre: "Мюзикл",
-      },
-      {
-        id: "sun-amelie",
-        title: "Амели",
-        description:
-          "Немного французской романтики, немного волшебства и хороший повод провести вечер вместе.",
-        poster: "/movies/movie-3.webp",
-        time: "19:15",
-        genre: "Комедия",
-      },
-    ],
+    movies: makeMovies("sat15", [
+      "18:00",
+      "18:30",
+      "19:00",
+      "19:30",
+      "20:00",
+      "20:30",
+    ]),
   },
 ];
 
@@ -250,60 +321,12 @@ export const foodOptions: FoodOption[] = [
   },
 ];
 
-export const foodPlaces: FoodPlaceOption[] = [
-  {
-    id: "place-1",
-    name: "Наше обычное место",
-    description:
-      "То самое место, которое уже немного стало нашим.",
-    meta: "10 минут пешком",
-  },
-  {
-    id: "place-2",
-    name: "Новое место, которое я нашёл",
-    description:
-      "Никогда там не были. Может быть, именно здесь появится ещё одно наше любимое место.",
-    meta: "15 минут на такси",
-  },
-];
-
-export const dressCodes: DressCodeOption[] = [
-  {
-    id: "beautiful",
-    emoji: "🖤",
-    label: "Красиво",
-    description:
-      "Потому что этот вечер заслуживает того, чтобы нарядиться друг для друга.",
-  },
-  {
-    id: "cozy",
-    emoji: "🤍",
-    label: "Уютно",
-    description:
-      "Главное — чтобы было тепло, удобно и хотелось задержаться подольше.",
-  },
-  {
-    id: "fancy",
-    emoji: "✨",
-    label: "Нарядно",
-    description:
-      "Сегодня у нас есть отличный повод выглядеть особенно красиво.",
-  },
-  {
-    id: "any",
-    emoji: "😌",
-    label: "На твой вкус",
-    description:
-      "Выбирай сама. Я всё равно буду смотреть только на тебя.",
-  },
-];
-
 export const meetingPoints: MeetingPointOption[] = [
   {
     id: "meeting-1",
-    label: "Площадь Нахимова",
-    time: "18:40",
-    note: "Я буду ждать тебя здесь. И, скорее всего, начну ждать немного раньше.",
+    label: "У ТЦ «Муссон»",
+    time: "18:00",
+    note: "Я буду с нетерпением ждать тебя здесь.",
   },
 ];
 

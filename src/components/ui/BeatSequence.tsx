@@ -6,6 +6,10 @@ type BeatSequenceProps = {
   beats: string[];
   onComplete: () => void;
   holdMs?: number;
+  /** Hold for the last beat only, e.g. when it lands the punchline and
+   * deserves more time to read than the setup beats before it. Falls
+   * back to `holdMs` when omitted. */
+  finalHoldMs?: number;
   className?: string;
 };
 
@@ -18,6 +22,7 @@ export function BeatSequence({
   beats,
   onComplete,
   holdMs = 1400,
+  finalHoldMs,
   className,
 }: BeatSequenceProps) {
   const [index, setIndex] = useState(0);
@@ -32,22 +37,26 @@ export function BeatSequence({
     const el = textRef.current;
     if (!el) return;
 
+    const isLast = index === beats.length - 1;
     let holdTimer: ReturnType<typeof setTimeout>;
     const cancelTween = revealBeat(el, () => {
-      holdTimer = setTimeout(() => {
-        if (index < beats.length - 1) {
-          setIndex((current) => current + 1);
-        } else {
-          onCompleteRef.current();
-        }
-      }, holdMs);
+      holdTimer = setTimeout(
+        () => {
+          if (!isLast) {
+            setIndex((current) => current + 1);
+          } else {
+            onCompleteRef.current();
+          }
+        },
+        isLast ? (finalHoldMs ?? holdMs) : holdMs,
+      );
     });
 
     return () => {
       cancelTween();
       clearTimeout(holdTimer);
     };
-  }, [index, beats.length, holdMs]);
+  }, [index, beats.length, holdMs, finalHoldMs]);
 
   return (
     <p

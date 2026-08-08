@@ -1,13 +1,7 @@
 import { useCallback, useState } from "react";
 import type { InvitationSelections, Step } from "../types/invitation";
 import type { DateSubmission, SubmissionStatus } from "../types/submission";
-import {
-  dateOptions,
-  dressCodes,
-  foodOptions,
-  foodPlaces,
-  meetingPoints,
-} from "../data/invitation";
+import { dateOptions, foodOptions, meetingPoints } from "../data/invitation";
 import { submitDatePlan } from "../services/submission";
 
 const STEP_ORDER: Step[] = [
@@ -16,8 +10,6 @@ const STEP_ORDER: Step[] = [
   "date",
   "movie",
   "food",
-  "foodPlace",
-  "dressCode",
   "meetingPoint",
   "confirmation",
 ];
@@ -26,8 +18,6 @@ const initialSelections: InvitationSelections = {
   dateId: null,
   movieId: null,
   foodId: null,
-  foodPlaceId: null,
-  dressCodeId: null,
   meetingPointId: null,
 };
 
@@ -97,16 +87,6 @@ export function useInvitation() {
     (foodId: string) => setSelections((prev) => ({ ...prev, foodId })),
     [],
   );
-  const selectFoodPlace = useCallback(
-    (foodPlaceId: string) =>
-      setSelections((prev) => ({ ...prev, foodPlaceId })),
-    [],
-  );
-  const selectDressCode = useCallback(
-    (dressCodeId: string) =>
-      setSelections((prev) => ({ ...prev, dressCodeId })),
-    [],
-  );
   const selectMeetingPoint = useCallback(
     (meetingPointId: string) =>
       setSelections((prev) => ({ ...prev, meetingPointId })),
@@ -123,10 +103,6 @@ export function useInvitation() {
     selectedDate?.movies.find((m) => m.id === selections.movieId) ?? null;
   const selectedFood =
     foodOptions.find((f) => f.id === selections.foodId) ?? null;
-  const selectedFoodPlace =
-    foodPlaces.find((p) => p.id === selections.foodPlaceId) ?? null;
-  const selectedDressCode =
-    dressCodes.find((d) => d.id === selections.dressCodeId) ?? null;
   const selectedMeetingPoint =
     meetingPoints.find((m) => m.id === selections.meetingPointId) ?? null;
 
@@ -144,14 +120,7 @@ export function useInvitation() {
       return;
     }
 
-    if (
-      !selectedDate ||
-      !selectedMovie ||
-      !selectedFood ||
-      !selectedFoodPlace ||
-      !selectedDressCode ||
-      !selectedMeetingPoint
-    ) {
+    if (!selectedDate || !selectedMovie || !selectedFood || !selectedMeetingPoint) {
       setSubmissionStatus("error");
       return;
     }
@@ -175,14 +144,6 @@ export function useInvitation() {
       selectedFood: {
         id: selectedFood.id,
         label: selectedFood.label,
-      },
-      selectedFoodPlace: {
-        id: selectedFoodPlace.id,
-        name: selectedFoodPlace.name,
-      },
-      selectedDressCode: {
-        id: selectedDressCode.id,
-        label: selectedDressCode.label,
       },
       selectedMeetingPoint: {
         id: selectedMeetingPoint.id,
@@ -209,8 +170,6 @@ export function useInvitation() {
     selectedDate,
     selectedMovie,
     selectedFood,
-    selectedFoodPlace,
-    selectedDressCode,
     selectedMeetingPoint,
     noClicks,
   ]);
@@ -221,8 +180,6 @@ export function useInvitation() {
     selectedDate,
     selectedMovie,
     selectedFood,
-    selectedFoodPlace,
-    selectedDressCode,
     selectedMeetingPoint,
     noClicks,
     incrementNoClicks,
@@ -237,8 +194,6 @@ export function useInvitation() {
     selectDate,
     selectMovie,
     selectFood,
-    selectFoodPlace,
-    selectDressCode,
     selectMeetingPoint,
   };
 }

@@ -13,7 +13,7 @@ export function FoodScreen({ selectedId, onSelect, onNext }: FoodScreenProps) {
   return (
     <ChoiceScreen<FoodOption>
       stepIndex={2}
-      stepTotal={6}
+      stepTotal={4}
       question={copy.food.question}
       options={foodOptions}
       getId={(food) => food.id}

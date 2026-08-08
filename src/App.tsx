@@ -1,12 +1,11 @@
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { useInvitation } from "./hooks/useInvitation";
+import { MusicToggle } from "./components/ui/MusicToggle";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
 import { InvitationScreen } from "./screens/InvitationScreen";
 import { DateScreen } from "./screens/DateScreen";
 import { MovieScreen } from "./screens/MovieScreen";
 import { FoodScreen } from "./screens/FoodScreen";
-import { FoodPlaceScreen } from "./screens/FoodPlaceScreen";
-import { DressCodeScreen } from "./screens/DressCodeScreen";
 import { MeetingPointScreen } from "./screens/MeetingPointScreen";
 import { ConfirmationScreen } from "./screens/ConfirmationScreen";
 
@@ -56,30 +55,12 @@ function App() {
           />
         );
 
-      case "foodPlace":
-        return (
-          <FoodPlaceScreen
-            selectedId={invitation.selections.foodPlaceId}
-            onSelect={invitation.selectFoodPlace}
-            onNext={invitation.advance}
-          />
-        );
-
-      case "dressCode":
-        return (
-          <DressCodeScreen
-            selectedId={invitation.selections.dressCodeId}
-            onSelect={invitation.selectDressCode}
-            onNext={invitation.advance}
-          />
-        );
-
       case "meetingPoint":
         return (
           <MeetingPointScreen
             selectedId={invitation.selections.meetingPointId}
             onSelect={invitation.selectMeetingPoint}
-            onNext={invitation.advance}
+            onDone={invitation.advance}
           />
         );
 
@@ -89,8 +70,6 @@ function App() {
             date={invitation.selectedDate}
             movie={invitation.selectedMovie}
             food={invitation.selectedFood}
-            foodPlace={invitation.selectedFoodPlace}
-            dressCode={invitation.selectedDressCode}
             meetingPoint={invitation.selectedMeetingPoint}
             onEdit={invitation.goTo}
             onReset={invitation.reset}
@@ -108,6 +87,7 @@ function App() {
     <MotionConfig reducedMotion="user">
       <div className="relative flex h-dvh flex-col overflow-hidden bg-ivory pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
         <div className="grain" />
+        <MusicToggle />
         <AnimatePresence mode="wait">
           <motion.div
             key={step}

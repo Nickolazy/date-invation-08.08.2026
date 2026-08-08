@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
+import { ChevronDown, Download } from "lucide-react";
+import { toPng } from "html-to-image";
 import { Button } from "../components/ui/Button";
 import { DateSummary } from "../components/summary/DateSummary";
 import { playFinalCta, playFinalReveal } from "../animations/cinematic";
@@ -7,9 +9,7 @@ import { copy, finalMessage } from "../data/invitation";
 import { cn } from "../lib/utils";
 import type {
   DateOption,
-  DressCodeOption,
   FoodOption,
-  FoodPlaceOption,
   MeetingPointOption,
   MovieOption,
   Step,
@@ -22,8 +22,6 @@ type ConfirmationScreenProps = {
   date: DateOption | null;
   movie: MovieOption | null;
   food: FoodOption | null;
-  foodPlace: FoodPlaceOption | null;
-  dressCode: DressCodeOption | null;
   meetingPoint: MeetingPointOption | null;
   onEdit: (target: Step) => void;
   onReset: () => void;
@@ -35,8 +33,6 @@ export function ConfirmationScreen({
   date,
   movie,
   food,
-  foodPlace,
-  dressCode,
   meetingPoint,
   onEdit,
   onReset,
@@ -44,13 +40,14 @@ export function ConfirmationScreen({
   onSubmit,
 }: ConfirmationScreenProps) {
   const [phase, setPhase] = useState<Phase>("ready");
+  const [imageStatus, setImageStatus] = useState<"idle" | "saving">("idle");
   const scrollerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const particlesRef = useRef<HTMLDivElement>(null);
   const blobRef0 = useRef<HTMLDivElement>(null);
   const blobRef1 = useRef<HTMLDivElement>(null);
-  const rowEls = useRef<Array<HTMLDivElement | null>>([null, null, null, null]);
+  const rowEls = useRef<Array<HTMLDivElement | null>>([null, null, null]);
   const rowRefCallbacks = useRef<Array<(el: HTMLDivElement | null) => void>>([]);
   const getRowRef = useCallback((index: number) => {
     rowRefCallbacks.current[index] ??= (el: HTMLDivElement | null) => {
@@ -59,7 +56,7 @@ export function ConfirmationScreen({
     return rowRefCallbacks.current[index];
   }, []);
 
-  const complete = date && movie && food && foodPlace && dressCode && meetingPoint;
+  const complete = date && movie && food && meetingPoint;
 
   useEffect(() => {
     if (phase !== "ready") return;
@@ -96,6 +93,50 @@ export function ConfirmationScreen({
     onSubmit();
   }, [submissionStatus, onSubmit]);
 
+  // Renders the summary card to a PNG so she can keep it — the plan lives
+  // in her photos, not just in a chat she might lose track of.
+  const handleSaveImage = useCallback(async () => {
+    if (!cardRef.current || imageStatus === "saving") return;
+    setImageStatus("saving");
+    // Let the readOnly re-render (edit links hidden) land before capturing.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    try {
+      const node = cardRef.current;
+      if (!node) return;
+      const dataUrl = await toPng(node, {
+        pixelRatio: 2,
+        cacheBust: true,
+        backgroundColor: "#fdf6ee",
+      });
+
+      let shared = false;
+      if (navigator.canShare && navigator.share) {
+        try {
+          const blob = await (await fetch(dataUrl)).blob();
+          const file = new File([blob], "our-date.png", { type: "image/png" });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file] });
+            shared = true;
+          }
+        } catch {
+          // Share sheet dismissed or unsupported — fall back to a direct
+          // download below instead of leaving her with nothing.
+        }
+      }
+
+      if (!shared) {
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = "our-date.png";
+        link.click();
+      }
+    } catch (err) {
+      console.error("Could not save the summary image", err);
+    } finally {
+      setImageStatus("idle");
+    }
+  }, [imageStatus]);
+
   if (!complete) {
     return (
       <div className="flex h-full items-center justify-center px-6 text-center text-stone">
@@ -108,7 +149,7 @@ export function ConfirmationScreen({
     <div
       ref={scrollerRef}
       className={cn(
-        "relative flex h-full flex-col items-center gap-8 overflow-y-auto px-6 py-10 transition-colors duration-700",
+        "relative flex h-full flex-col items-center gap-5 overflow-y-auto overflow-x-hidden px-6 py-6 transition-colors duration-700",
         phase === "reveal" && submissionStatus === "success"
           ? "bg-rose-mist"
           : "bg-ivory",
@@ -132,16 +173,16 @@ export function ConfirmationScreen({
       />
 
       {phase === "ready" ? (
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex flex-1 items-center justify-center text-center">
           <p className="text-balance font-serif text-2xl text-ink">
             {copy.confirmation.ready}
           </p>
         </div>
       ) : (
-        <div className="relative z-10 flex w-full flex-1 flex-col items-center gap-8">
+        <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center gap-4">
           <div
             ref={particlesRef}
-            className="pointer-events-none absolute inset-x-0 top-16 flex justify-center gap-3"
+            className="pointer-events-none absolute inset-x-0 top-8 flex justify-center gap-3"
           >
             {/* Plain flex children, not individually positioned — GSAP
                 only animates their transform/opacity, so `justify-center`
@@ -166,17 +207,16 @@ export function ConfirmationScreen({
             date={date}
             movie={movie}
             food={food}
-            foodPlace={foodPlace}
-            dressCode={dressCode}
             meetingPoint={meetingPoint}
             onEdit={onEdit}
+            readOnly={imageStatus === "saving"}
           />
 
           <motion.p
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.25 }}
-            className="text-balance text-center text-[15px] text-stone"
+            className="text-balance text-center text-[14px] text-stone"
           >
             {copy.confirmation.closing} ❤️
           </motion.p>
@@ -186,8 +226,23 @@ export function ConfirmationScreen({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
+              className="flex flex-col items-center gap-1"
             >
-              <Button onClick={handleSubmit}>{copy.confirmation.cta}</Button>
+              <p className="text-balance text-center text-[13px] text-stone">
+                {copy.confirmation.ctaHint}
+              </p>
+              <motion.div
+                animate={{ y: [0, 4, 0] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <ChevronDown className="h-4 w-4 text-burgundy" aria-hidden="true" />
+              </motion.div>
+              <motion.div
+                animate={{ scale: [1, 1.04, 1] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Button onClick={handleSubmit}>{copy.confirmation.cta}</Button>
+              </motion.div>
             </motion.div>
           )}
 
@@ -231,6 +286,17 @@ export function ConfirmationScreen({
               <p className="font-serif text-xl text-burgundy">
                 {finalMessage}
               </p>
+              <button
+                type="button"
+                onClick={handleSaveImage}
+                disabled={imageStatus === "saving"}
+                className="min-h-10 inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-burgundy underline underline-offset-4 decoration-burgundy/40 disabled:cursor-wait disabled:opacity-50"
+              >
+                <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                {imageStatus === "saving"
+                  ? copy.confirmation.savingImage
+                  : copy.confirmation.saveCta}
+              </button>
               <button
                 type="button"
                 onClick={onReset}

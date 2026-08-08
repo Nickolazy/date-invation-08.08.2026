@@ -52,7 +52,7 @@ export function MovieScreen({
         <motion.div key="picking" exit={{ opacity: 0 }} className="h-full">
           <ChoiceScreen<MovieOption>
             stepIndex={1}
-            stepTotal={6}
+            stepTotal={4}
             question={copy.movie.question}
             hint={copy.movie.hint}
             options={date.movies}

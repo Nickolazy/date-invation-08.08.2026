@@ -9,7 +9,10 @@ type EnvelopeRevealProps = {
 };
 
 const OPEN_DELAY = 550;
-const HOLD_AFTER_OPEN = 2400;
+// Letter content finishes fading in ~1.35s after opening starts; the
+// rest of this hold is how long the fully-open letter just sits there
+// to read before we move on.
+const HOLD_AFTER_OPEN = 3850;
 const DONE_DELAY = OPEN_DELAY + HOLD_AFTER_OPEN;
 
 /**

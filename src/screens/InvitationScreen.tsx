@@ -101,6 +101,7 @@ export function InvitationScreen({ onDone, onNoClick }: InvitationScreenProps) {
                   beats={copy.invitation.no3.beats}
                   onComplete={() => setStage("no3-settled")}
                   holdMs={1300}
+                  finalHoldMs={3900}
                   className="text-balance font-serif text-2xl text-ink"
                 />
               )}

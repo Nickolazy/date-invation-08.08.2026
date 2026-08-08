@@ -4,8 +4,6 @@ export type Step =
   | "date"
   | "movie"
   | "food"
-  | "foodPlace"
-  | "dressCode"
   | "meetingPoint"
   | "confirmation";
 
@@ -34,21 +32,6 @@ export type FoodOption = {
   description: string;
 };
 
-export type FoodPlaceOption = {
-  id: string;
-  name: string;
-  description: string;
-  image?: string;
-  meta?: string;
-};
-
-export type DressCodeOption = {
-  id: string;
-  emoji: string;
-  label: string;
-  description: string;
-};
-
 export type MeetingPointOption = {
   id: string;
   label: string;
@@ -60,7 +43,5 @@ export type InvitationSelections = {
   dateId: string | null;
   movieId: string | null;
   foodId: string | null;
-  foodPlaceId: string | null;
-  dressCodeId: string | null;
   meetingPointId: string | null;
 };

@@ -59,8 +59,6 @@ type Submission = {
   selectedDate: { id: string; weekday: string; day: string; month: string };
   selectedMovie: { id: string; title: string; time: string };
   selectedFood: { id: string; label: string };
-  selectedFoodPlace: { id: string; name: string };
-  selectedDressCode: { id: string; label: string };
   selectedMeetingPoint: { id: string; label: string; time?: string };
   noClicks: number;
   completedAt: string;
@@ -114,36 +112,17 @@ function validateSubmission(data: unknown): Submission | null {
     return null;
   }
 
-  if (
-    !hasStringFields(data.selectedMovie, [
-      ["id", MAX_ID_LENGTH],
-      ["title", MAX_STRING_LENGTH],
-      ["time", MAX_STRING_LENGTH],
-    ])
-  ) {
-    return null;
-  }
+  const movie = data.selectedMovie;
+  if (!isPlainObject(movie)) return null;
+  if (!isNonEmptyString(movie.id, MAX_ID_LENGTH)) return null;
+  if (!isNonEmptyString(movie.title, MAX_STRING_LENGTH)) return null;
+  // Empty on purpose for the "we'll decide together" option — there's no
+  // fixed showtime to report, so unlike id/title this can't require
+  // non-empty.
+  if (!isOptionalString(movie.time, MAX_STRING_LENGTH)) return null;
 
   if (
     !hasStringFields(data.selectedFood, [
-      ["id", MAX_ID_LENGTH],
-      ["label", MAX_STRING_LENGTH],
-    ])
-  ) {
-    return null;
-  }
-
-  if (
-    !hasStringFields(data.selectedFoodPlace, [
-      ["id", MAX_ID_LENGTH],
-      ["name", MAX_STRING_LENGTH],
-    ])
-  ) {
-    return null;
-  }
-
-  if (
-    !hasStringFields(data.selectedDressCode, [
       ["id", MAX_ID_LENGTH],
       ["label", MAX_STRING_LENGTH],
     ])
@@ -172,10 +151,12 @@ function validateSubmission(data: unknown): Submission | null {
   return {
     submissionId: data.submissionId as string,
     selectedDate: data.selectedDate as Submission["selectedDate"],
-    selectedMovie: data.selectedMovie as Submission["selectedMovie"],
+    selectedMovie: {
+      id: movie.id as string,
+      title: movie.title as string,
+      time: (movie.time as string | undefined) ?? "",
+    },
     selectedFood: data.selectedFood as Submission["selectedFood"],
-    selectedFoodPlace: data.selectedFoodPlace as Submission["selectedFoodPlace"],
-    selectedDressCode: data.selectedDressCode as Submission["selectedDressCode"],
     selectedMeetingPoint: {
       id: meetingPoint.id as string,
       label: meetingPoint.label as string,
@@ -200,6 +181,9 @@ function buildTelegramMessage(submission: Submission): string {
   const meetingTimeLine = submission.selectedMeetingPoint.time
     ? `\n${e(submission.selectedMeetingPoint.time)}`
     : "";
+  const movieTimeLine = submission.selectedMovie.time
+    ? `\n${e(submission.selectedMovie.time)}`
+    : "";
 
   return [
     "❤️ <b>НОВОЕ СВИДАНИЕ</b>",
@@ -207,17 +191,10 @@ function buildTelegramMessage(submission: Submission): string {
     `📅 ${e(submission.selectedDate.day)} ${e(submission.selectedDate.month)}, ${e(submission.selectedDate.weekday)}`,
     "",
     "🎬 <b>Фильм</b>",
-    e(submission.selectedMovie.title),
-    e(submission.selectedMovie.time),
+    `${e(submission.selectedMovie.title)}${movieTimeLine}`,
     "",
-    "🍝 <b>Перед кино</b>",
+    "🍝 <b>Еда</b>",
     e(submission.selectedFood.label),
-    "",
-    "📍 <b>Где едим</b>",
-    e(submission.selectedFoodPlace.name),
-    "",
-    "👗 <b>Как одеваемся</b>",
-    e(submission.selectedDressCode.label),
     "",
     "📍 <b>Где встречаемся</b>",
     `${e(submission.selectedMeetingPoint.label)}${meetingTimeLine}`,

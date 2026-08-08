@@ -13,7 +13,7 @@ export function DateScreen({ selectedId, onSelect, onNext }: DateScreenProps) {
   return (
     <ChoiceScreen<DateOption>
       stepIndex={0}
-      stepTotal={6}
+      stepTotal={4}
       question={copy.date.question}
       hint={copy.date.hint}
       options={dateOptions}
@@ -23,7 +23,7 @@ export function DateScreen({ selectedId, onSelect, onNext }: DateScreenProps) {
       confirmedText={copy.date.confirmed}
       nextLabel={copy.date.next}
       onNext={onNext}
-      gridClassName="grid grid-cols-3 gap-3"
+      gridClassName="grid grid-cols-2 gap-3"
       renderOption={(date, selected, select) => (
         <SelectionCard
           selected={selected}
